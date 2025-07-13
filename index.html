@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Bullet Generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #fefdf8;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .main-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .btn-primary {
+      background-color: #ffc107;
+      border: none;
+      color: black;
+    }
+    .btn-primary:hover {
+      background-color: #e0a800;
+    }
+    .output {
+      margin-top: 1.5rem;
+      background: #fff3cd;
+      padding: 1rem;
+      border-radius: 5px;
+    }
+    footer {
+      text-align: center;
+      margin-top: 4rem;
+      padding: 1rem;
+      font-size: 14px;
+      color: #777;
+    }
+    .loader {
+      display: none;
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .loader i {
+      font-size: 24px;
+      color: #ffc107;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .suggestion-btn {
+      font-size: 14px;
+      margin: 0.25rem;
+      cursor: pointer;
+      display: inline-block;
+    }
+    .suggestions-box {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+  <header class="bg-warning text-center py-3 mb-4">
+    <h1 class="mb-0">⚡ Resume Bullet & Interview Prep Assistant ⚡</h1>
+  </header>
+
+  <div class="container">
+    <div class="row justify-content-center g-4">
+      <!-- Main Form -->
+      <div class="col-lg-8">
+        <div class="main-box">
+          <textarea id="storyInput" rows="5" class="form-control mb-3" placeholder="Paste your experience story here..."></textarea>
+          <button class="btn btn-primary w-100" onclick="generateBullet()">Generate Resume Bullet & Questions</button>
+
+          <div class="loader" id="loader">
+            <i class="fas fa-star"></i> Generating response on local server. Thank you for your patience...
+          </div>
+
+          <div class="output">
+            <h5>🎯 Resume Bullet</h5>
+            <p id="bulletOutput">...</p>
+
+            <h5 class="mt-4">💬 Suggested Interview Questions</h5>
+            <ul id="questionList" class="ps-3"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Suggestions -->
+      <div class="col-lg-4">
+        <div class="suggestions-box">
+          <h6 class="mb-3">✨ Try one of these:</h6>
+          <span class="badge bg-secondary suggestion-btn" onclick="fillExample(this)">Automated invoice processing using Python and OCR for finance team.</span>
+          <span class="badge bg-secondary suggestion-btn" onclick="fillExample(this)">Optimized Android startup performance by modifying system services.</span>
+          <span class="badge bg-secondary suggestion-btn" onclick="fillExample(this)">Built Django dashboard for real-time patch verification in Gerrit.</span>
+          <span class="badge bg-secondary suggestion-btn" onclick="fillExample(this)">Improved question retrieval system using lazy evaluation and clustering.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="text-center mt-5 mb-3 text-muted small">
+    Created for live demo · Demo For Cantilever Labs
+  </footer>
+
+  <script>
+    async function generateBullet() {
+      const story = document.getElementById("storyInput").value;
+      const loader = document.getElementById("loader");
+      const bulletOutput = document.getElementById("bulletOutput");
+      const questionList = document.getElementById("questionList");
+
+      loader.style.display = "block";
+      bulletOutput.innerText = "...";
+      questionList.innerHTML = "";
+
+      const response = await fetch("https://0e3d45b1ec8e.ngrok-free.app/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ story })
+      });
+
+      const data = await response.json();
+
+      loader.style.display = "none";
+      bulletOutput.innerText = data.bullet.trim();
+      data.questions.trim().split("\n").forEach(q => {
+        if (q.trim()) {
+          const li = document.createElement("li");
+          li.innerText = q.trim();
+          questionList.appendChild(li);
+        }
+      });
+    }
+
+    function fillExample(el) {
+      document.getElementById("storyInput").value = el.innerText;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  </script>
+</body>
+</html>
