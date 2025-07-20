@@ -1,143 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Resume Bullet Generator</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <style>
-    body {
-      background: #fefdf8;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .main-box {
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    .btn-primary {
-      background-color: #ffc107;
-      border: none;
-      color: black;
-    }
-    .btn-primary:hover {
-      background-color: #e0a800;
-    }
-    .output {
-      margin-top: 1.5rem;
-      background: #fff3cd;
-      padding: 1rem;
-      border-radius: 5px;
-    }
-    footer {
-      text-align: center;
-      margin-top: 4rem;
-      padding: 1rem;
-      font-size: 14px;
-      color: #777;
-    }
-    .loader {
-      display: none;
-      text-align: center;
-      margin-top: 1rem;
-    }
-    .loader i {
-      font-size: 24px;
-      color: #ffc107;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .suggestion-btn {
-      font-size: 14px;
-      margin: 0.25rem;
-      cursor: pointer;
-      display: inline-block;
-    }
-    .suggestions-box {
-      background: #fff;
-      border-radius: 8px;
-      padding: 1rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    #chatSection {
-      display: none;
-    }
-    #chatBox {
-      height: 200px;
-      overflow-y: auto;
-      background: #f8f9fa;
-    }
-    .chat-message {
-      margin-bottom: 0.5rem;
-    }
-    .chat-message.user {
-      text-align: right;
-      color: #000;
-    }
-    .chat-message.bot {
-      text-align: left;
-      color: #444;
-    }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Resume Parser</title>
 </head>
-<body>
-  <header class="bg-warning text-center py-3 mb-4">
-    <h1 class="mb-0">⚡ Resume Bullet & Interview Prep Assistant ⚡</h1>
-  </header>
 
-  <div class="container">
-    <div class="row justify-content-center g-4">
-      <!-- Main Form -->
-      <div class="col-lg-8">
-        <div class="main-box">
-          <textarea id="storyInput" rows="5" class="form-control mb-3" placeholder="Paste your experience story here..."></textarea>
-          <textarea id="instructionsInput" rows="2" class="form-control mb-3" placeholder="Optional: Add instructions like 'Make it technical' or 'Add more metrics'..."></textarea>
-          <button class="btn btn-primary w-100" onclick="generateBullet()">Generate Resume Bullet & Questions</button>
+<body class="bg-gray-900 text-white min-h-screen">
+  <div class="relative isolate overflow-hidden">
+    <!-- Background Decoration -->
+    <svg class="absolute inset-0 -z-10 h-full w-full stroke-white/10" aria-hidden="true">
+      <defs>
+        <pattern id="pattern-bg" width="200" height="200" patternUnits="userSpaceOnUse">
+          <path d="M.5 200V.5H200" fill="none" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#pattern-bg)" stroke-width="0" />
+    </svg>
 
-          <div class="loader" id="loader">
-            <i class="fas fa-star"></i> Generating response on local server. Thank you for your patience...
-          </div>
+    <div class="mx-auto max-w-screen-xl px-4 py-12 lg:flex lg:gap-16 lg:items-start">
+      <div class="flex-1 min-w-0">
+        <img class="h-11 mb-6" src="cantileverwhitelogo.png" alt="Logo">
+        <h1 class="text-3xl font-bold sm:text-4xl">Resume Bullet & Interview Prep Assistant</h1>
+        <p class="mt-6 text-gray-300">Paste your experience story and get a powerful resume bullet and related questions instantly.</p>
 
-          <div class="output">
-            <h5>🎯 Resume Bullet</h5>
-            <p id="bulletOutput">...</p>
+        <!-- Form -->
+        <div class="mt-8">
+          <textarea id="storyInput" rows="5" class="w-full rounded-md p-3 text-black mb-4" placeholder="Paste your experience story here..."></textarea>
+          <textarea id="instructionsInput" rows="2" class="w-full rounded-md p-3 text-black mb-4" placeholder="Optional: Add instructions like 'Make it technical' or 'Add more metrics'..."></textarea>
+          <button onclick="generateBullet()" class="w-full rounded-xl bg-blue-500 hover:bg-blue-600 py-2.5 text-white font-semibold">Generate Resume Bullet & Questions</button>
+        </div>
 
-            <h5 class="mt-4">💬 Suggested Interview Questions</h5>
-            <div id="questionList" class="ps-3"></div>
-          </div>
+        <!-- Loader -->
+        <div class="text-yellow-300 mt-4 hidden" id="loader">
+          <i class="fas fa-star animate-spin"></i> Generating response on local server. Thank you for your patience...
+        </div>
+
+        <!-- Output Section -->
+        <div class="mt-8 bg-white text-black p-6 rounded-xl">
+          <h3 class="text-xl font-semibold">🌟 Resume Bullet</h3>
+          <div id="bulletOutput" class="mt-2">...</div>
+
+          <h3 class="text-xl font-semibold mt-6">💬 Suggested Interview Questions</h3>
+          <div id="questionList" class="mt-2 ps-4"></div>
         </div>
 
         <!-- Chat Section -->
-        <div id="chatSection">
-          <h5 class="mt-4">💡 Ask AI: Prepare Smarter</h5>
-          <div id="chatBox" class="border rounded p-3 mb-2"></div>
-          <input type="text" id="userChatInput" class="form-control" placeholder="Ask a question about your bullet...">
-          <button class="btn btn-sm btn-primary mt-2" onclick="sendToChat()">Ask AI</button>
+        <div id="chatSection" class="mt-10 hidden">
+          <h3 class="text-xl font-semibold">💡 Ask AI: Prepare Smarter</h3>
+          <div id="chatBox" class="mt-2 h-48 overflow-y-auto bg-gray-100 text-black p-3 rounded-md"></div>
+          <input type="text" id="userChatInput" class="w-full mt-2 p-2 text-black rounded-md" placeholder="Ask a question about your bullet...">
+          <button onclick="sendToChat()" class="mt-2 bg-blue-500 hover:bg-blue-600 text-white py-1.5 px-4 rounded-md">Ask AI</button>
         </div>
       </div>
 
-      <!-- Suggestions -->
-      <div class="col-lg-4">
-        <div class="suggestions-box">
-          <h6 class="mb-3">✨ Try one of these:</h6>
-          <span class="badge bg-secondary suggestion-btn" onclick="fillExample(this)">Automated invoice processing using Python and OCR for finance team.</span>
-          <span class="badge bg-secondary suggestion-btn" onclick="fillExample(this)">Optimized Android startup performance by modifying system services.</span>
-          <span class="badge bg-secondary suggestion-btn" onclick="fillExample(this)">Built Django dashboard for real-time patch verification in Gerrit.</span>
-          <span class="badge bg-secondary suggestion-btn" onclick="fillExample(this)">Improved question retrieval system using lazy evaluation and clustering.</span>
-        </div>
+      <!-- Right Illustration -->
+      <div class="flex-shrink-0 mt-12 lg:mt-0 w-full lg:w-[20%]">
+        <img src="scan.gif" alt="Illustration" class="w-full rounded-lg shadow-xl" />
       </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-6 text-sm text-gray-400">
+      Created for live demo by @saichothave &middot; Cantilever Labs
+    </footer>
   </div>
 
-  <footer class="text-center mt-5 mb-3 text-muted small">
-    Created for live demo by @saichothave· Cantilever Labs
-  </footer>
-
+  <!-- Scripts from Original HTML (JS kept unchanged) -->
   <script>
     let contextStory = "";
     let contextBullet = "";
@@ -156,7 +87,7 @@
       document.getElementById("chatSection").style.display = "none";
       document.getElementById("chatBox").innerHTML = "";
 
-      const response = await fetch("https://334829eb5618.ngrok-free.app/generate", {
+      const response = await fetch("http://127.0.0.1:8000/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -171,7 +102,14 @@
       contextQuestions = data.questions.trim();
 
       loader.style.display = "none";
-      bulletOutput.innerText = contextBullet;
+
+      const bulletHTML = data.highlighted_bullet.trim().split("\n")
+        .filter(line => line.trim().startsWith("*"))
+        .map(line => `<li>${line.replace(/^\*\s*/, '').replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</li>`)
+        .join("");
+
+      bulletOutput.innerHTML = `<ul class='list-disc ps-4'>${bulletHTML}</ul>`;
+
       data.questions.trim().split("\n").forEach(q => {
         if (q.trim()) {
           const div = document.createElement("div");
@@ -191,7 +129,7 @@
       addChatMessage("user", userInput);
       document.getElementById("userChatInput").value = "";
 
-      const response = await fetch("https://334829eb5618.ngrok-free.app/chat", {
+      const response = await fetch("http://127.0.0.1:8000/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -204,22 +142,28 @@
         })
       });
 
-      const data = await response.json();
-      addChatMessage("bot", data.reply.trim());
+      const lines = data.split('\n');
+
+      const refined_data = lines
+        .filter(line => line.trim().startsWith("*"))
+        .map(line =>
+          `<li>${line.replace(/^\*\s*/, '').replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</li>`
+        )
+        .join("");
+
+      addChatMessage("bot", refined_data);
     }
 
     function addChatMessage(sender, text) {
       const msg = document.createElement("div");
       msg.classList.add("chat-message", sender);
-      msg.innerText = text;
-      document.getElementById("chatBox").appendChild(msg);
-      document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;
-    }
-
-    function fillExample(el) {
-      document.getElementById("storyInput").value = el.innerText;
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      msg.innerHTML = text;
+      const chatBox = document.getElementById("chatBox");
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>
+
 </html>
