@@ -6,11 +6,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
   <title>Resume Parser</title>
+  <style>
+    .listening {
+      animation: pulse 1s infinite;
+      background-color: #38bdf8 !important;
+      /* bright blue */
+      color: white !important;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.6);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+      }
+    }
+  </style>
+
 </head>
 
 <body class="bg-gray-900 text-white min-h-screen">
   <div class="relative isolate overflow-hidden">
-    <!-- Background Decoration -->
     <svg class="absolute inset-0 -z-10 h-full w-full stroke-white/10" aria-hidden="true">
       <defs>
         <pattern id="pattern-bg" width="200" height="200" patternUnits="userSpaceOnUse">
@@ -21,45 +43,82 @@
     </svg>
 
     <div class="mx-auto max-w-screen-xl px-4 py-12 lg:flex lg:gap-16 lg:items-start">
-      <div class="flex-1 min-w-0">
+      <div class="flex-1 min-w-0 relative">
         <img class="h-11 mb-6" src="cantileverwhitelogo.png" alt="Logo">
         <h1 class="text-3xl font-bold sm:text-4xl">Resume Bullet & Interview Prep Assistant</h1>
-        <p class="mt-6 text-gray-300">Paste your experience story and get a powerful resume bullet and related questions instantly.</p>
+        <p class="mt-6 text-gray-300">Paste your story and get a powerful resume bullet and related questions
+          instantly.</p>
 
         <!-- Form -->
-        <div class="mt-8">
-          <textarea id="storyInput" rows="5" class="w-full rounded-md p-3 text-black mb-4" placeholder="Paste your experience story here..."></textarea>
-          <textarea id="instructionsInput" rows="2" class="w-full rounded-md p-3 text-black mb-4" placeholder="Optional: Add instructions like 'Make it technical' or 'Add more metrics'..."></textarea>
-          <button onclick="generateBullet()" class="w-full rounded-xl bg-blue-500 hover:bg-blue-600 py-2.5 text-white font-semibold">Generate Resume Bullet & Questions</button>
+        <div class="mt-8 bg-gray-800 p-6 rounded-xl">
+          <div class="flex items-center gap-2 mb-4">
+
+            <textarea id="storyInput" rows="5" class="w-full rounded-md p-3 text-black"
+              placeholder="Paste your story here..."></textarea>
+            <button id="micButton" onclick="startVoiceInput()"
+              class="bg-gray-300 text-black p-2 rounded-full hover:bg-gray-400" title="Speak">
+              <i class="fas fa-microphone"></i>
+            </button>
+
+          </div>
+
+          <textarea id="instructionsInput" rows="2" class="w-full rounded-md p-3 text-black mb-4"
+            placeholder="Optional: Add instructions like 'Make it technical' or 'Add more metrics'..."></textarea>
+          <button onclick="generateBullet()"
+            class="w-full rounded-xl bg-blue-500 hover:bg-blue-600 py-2.5 text-white font-semibold">Generate Resume
+            Bullet & Questions</button>
         </div>
 
         <!-- Loader -->
-        <div class="text-yellow-300 mt-4 hidden" id="loader">
-          <i class="fas fa-star animate-spin"></i> Generating response on local server. Thank you for your patience...
+        <div class="flex flex-col items-center text-yellow-300 mt-4 hidden" id="loader">
+          <i class="fas fa-star animate-spin"></i>
+          <span class="ml-2 text-sm font-semibold text-center">Generating...</span>
         </div>
 
         <!-- Output Section -->
-        <div class="mt-8 bg-white text-black p-6 rounded-xl">
+        <div class="mt-8 bg-white text-black p-6 rounded-xl relative">
           <h3 class="text-xl font-semibold">🌟 Resume Bullet</h3>
-          <div id="bulletOutput" class="mt-2">...</div>
 
-          <h3 class="text-xl font-semibold mt-6">💬 Suggested Interview Questions</h3>
-          <div id="questionList" class="mt-2 ps-4"></div>
+          <div id="bulletOutput" class="mt-4 relative">
+            <!-- Bullet content rendered here -->
+          </div>
+
+          <!-- 👇 Move Suggest Button here -->
+          <div class="mt-3">
+            <button id="suggestBtn" onclick="suggestQuestions()"
+              class="hidden bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-sm shadow-md">
+              🎯 Suggest Interview Questions
+            </button>
+          </div>
+
+          <div id="questionList" class="mt-6 ps-4"></div>
         </div>
+
+
 
         <!-- Chat Section -->
         <div id="chatSection" class="mt-10 hidden">
           <h3 class="text-xl font-semibold">💡 Ask AI: Prepare Smarter</h3>
           <div id="chatBox" class="mt-2 h-48 overflow-y-auto bg-gray-100 text-black p-3 rounded-md"></div>
-          <input type="text" id="userChatInput" class="w-full mt-2 p-2 text-black rounded-md" placeholder="Ask a question about your bullet...">
-          <button onclick="sendToChat()" class="mt-2 bg-blue-500 hover:bg-blue-600 text-white py-1.5 px-4 rounded-md">Ask AI</button>
+          <input type="text" id="userChatInput" class="w-full mt-2 p-2 text-black rounded-md"
+            placeholder="Ask a question about your bullet...">
+          <button onclick="sendToChat()"
+            class="mt-2 bg-blue-500 hover:bg-blue-600 text-white py-1.5 px-4 rounded-md">Ask AI</button>
         </div>
       </div>
 
       <!-- Right Illustration -->
-      <div class="flex-shrink-0 mt-12 lg:mt-0 w-full lg:w-[20%]">
+      <!-- Right Illustration + CTA -->
+      <div class="flex-shrink-0 mt-12 lg:mt-0 w-full lg:w-[20%] flex flex-col items-center gap-6">
         <img src="scan.gif" alt="Illustration" class="w-full rounded-lg shadow-xl" />
+
+        <!-- Highlight CTA -->
+        <a href="resume_score.html" target="_blank" rel="noopener noreferrer"
+          class="bg-yellow-100 text-yellow-900 font-semibold px-4 py-2 rounded-lg shadow-md border border-yellow-300 text-sm hover:bg-yellow-200 transition-all duration-200 text-center w-full">
+          👉 Try out our <span class="underline underline-offset-2" >Resume Scorer</span>
+        </a>
       </div>
+
     </div>
 
     <!-- Footer -->
@@ -68,7 +127,7 @@
     </footer>
   </div>
 
-  <!-- Scripts from Original HTML (JS kept unchanged) -->
+  <!-- Scripts -->
   <script>
     let contextStory = "";
     let contextBullet = "";
@@ -80,18 +139,18 @@
       const loader = document.getElementById("loader");
       const bulletOutput = document.getElementById("bulletOutput");
       const questionList = document.getElementById("questionList");
+      const suggestBtn = document.getElementById("suggestBtn");
 
       loader.style.display = "block";
       bulletOutput.innerText = "...";
       questionList.innerHTML = "";
+      suggestBtn.classList.add("hidden");
       document.getElementById("chatSection").style.display = "none";
       document.getElementById("chatBox").innerHTML = "";
 
       const response = await fetch("http://127.0.0.1:8000/generate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ story, instructions })
       });
 
@@ -99,7 +158,7 @@
 
       contextStory = story;
       contextBullet = data.bullet.trim();
-      contextQuestions = data.questions.trim();
+      contextQuestions = ""; // reset
 
       loader.style.display = "none";
 
@@ -110,7 +169,38 @@
 
       bulletOutput.innerHTML = `<ul class='list-disc ps-4'>${bulletHTML}</ul>`;
 
-      data.questions.trim().split("\n").forEach(q => {
+      // Position the Suggest Button near the bullet output
+      setTimeout(() => {
+        const rect = bulletOutput.getBoundingClientRect();
+        const containerRect = bulletOutput.offsetParent.getBoundingClientRect();
+        suggestBtn.style.top = `${bulletOutput.offsetTop + 10}px`;
+        suggestBtn.style.left = `${bulletOutput.offsetLeft + bulletOutput.offsetWidth - 220}px`;
+        suggestBtn.classList.remove("hidden");
+      }, 100);
+
+      document.getElementById("chatSection").style.display = "block";
+      addChatMessage("bot", "You can now ask me anything about your bullet to prepare smarter.");
+    }
+
+    async function suggestQuestions() {
+      if (!contextBullet) {
+        alert("Please generate a resume bullet first.");
+        return;
+      }
+
+      const response = await fetch("http://127.0.0.1:8000/generate_questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bullet: contextBullet, story: contextStory })
+      });
+
+      const data = await response.json();
+      contextQuestions = data.questions.trim();
+
+      const questionList = document.getElementById("questionList");
+      questionList.innerHTML = "";
+
+      contextQuestions.split("\n").forEach(q => {
         if (q.trim()) {
           const div = document.createElement("div");
           div.innerText = q.trim();
@@ -119,7 +209,6 @@
       });
 
       document.getElementById("chatSection").style.display = "block";
-      addChatMessage("bot", "You can now ask me anything about your bullet to prepare smarter.");
     }
 
     async function sendToChat() {
@@ -131,9 +220,7 @@
 
       const response = await fetch("http://127.0.0.1:8000/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           story: contextStory,
           bullet: contextBullet,
@@ -142,16 +229,17 @@
         })
       });
 
+      const data = await response.text();
       const lines = data.split('\n');
 
-      const refined_data = lines
+      const refinedData = lines
         .filter(line => line.trim().startsWith("*"))
         .map(line =>
           `<li>${line.replace(/^\*\s*/, '').replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</li>`
         )
         .join("");
 
-      addChatMessage("bot", refined_data);
+      addChatMessage("bot", `<ul class='list-disc ps-4'>${refinedData}</ul>`);
     }
 
     function addChatMessage(sender, text) {
@@ -162,6 +250,75 @@
       chatBox.appendChild(msg);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
+
+    let recognition;
+    let pauseTimeout;
+    let finalTranscript = "";
+
+    function startVoiceInput() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Your browser does not support Speech Recognition.");
+        return;
+      }
+
+      const micButton = document.getElementById("micButton");
+      const textarea = document.getElementById("storyInput");
+
+      if (recognition) {
+        recognition.stop(); // toggle off if already listening
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = true;
+      recognition.continuous = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        console.log("🎙️ Listening...");
+        micButton.classList.add("listening");
+        finalTranscript = textarea.value || "";
+      };
+
+      recognition.onresult = (event) => {
+        let interimTranscript = "";
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += (finalTranscript ? " " : "") + transcript.trim();
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        textarea.value = finalTranscript + (interimTranscript ? " " + interimTranscript : "");
+
+        clearTimeout(pauseTimeout);
+        pauseTimeout = setTimeout(() => {
+          recognition.stop();
+          console.log("🛑 Stopped due to silence");
+        }, 5000);
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        alert("Speech recognition failed. Please try again.");
+      };
+
+      recognition.onend = () => {
+        console.log("🎤 Recognition ended");
+        micButton.classList.remove("listening");
+        recognition = null;
+        clearTimeout(pauseTimeout);
+      };
+
+      recognition.start();
+    }
+
+
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume Scorer</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="script.js"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen p-8">
+  <img class="h-11 mb-6" src="cantileverwhitelogo.png" alt="Logo">
+
+  <div class="max-w-6xl mx-auto flex flex-col gap-8 px-4 py-6">
+
+    <!-- Form Section -->
+    <div class="w-full bg-white text-black rounded-xl shadow-lg p-6 space-y-6">
+      <h1 class="text-3xl font-bold text-purple-700">Resume Scorer</h1>
+      <form id="resumeForm" class="space-y-4">
+        <div>
+          <label for="jobTitle" class="block font-semibold">Job Title</label>
+          <input type="text" id="jobTitle" class="w-full mt-1 p-2 border border-gray-300 rounded-md" placeholder="Enter job title">
+        </div>
+        <div>
+          <label for="jobDescription" class="block font-semibold">Job Description</label>
+          <textarea id="jobDescription" rows="5" class="w-full mt-1 p-2 border border-gray-300 rounded-md" placeholder="Paste job description here..."></textarea>
+        </div>
+        <div>
+          <label class="block font-semibold">Upload Resume (PDF)</label>
+          <label for="resumeUpload" class="flex items-center justify-center mt-2 p-4 border-2 border-dashed border-gray-400 rounded-md text-gray-600 cursor-pointer hover:bg-gray-100">
+            <span>Click to upload or drag your PDF here</span>
+            <input type="file" id="resumeUpload" accept=".pdf" class="hidden">
+          </label>
+          <p id="fileName" class="text-sm mt-2 text-gray-600"></p>
+        </div>
+        <button id="analyzeBtn" type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md flex items-center justify-center" disabled>
+            <svg id="spinner" class="hidden animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span id="analyzeText">Analyze Resume</span>
+        </button>
+
+      </form>
+    </div>
+
+    <!-- Analysis Section -->
+    <div id="analysis-container" class="hidden w-full bg-gray-800 text-white rounded-xl shadow-lg p-6 space-y-6">
+        <div class="text-center space-y-1">
+            <h2 class="text-3xl font-bold">Resume Score: <span id="overall-score" class="text-green-400">--</span>/100</h2>
+            <p id="score-label" class="text-lg text-gray-300">--</p>
+        </div>
+
+        <div class="bg-white shadow-md rounded-lg p-4 w-full max-w-xs mx-auto">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 text-center">Resume Analysis</h3>
+            <div class="relative w-40 mx-auto">
+                <canvas id="analysisChart" class="w-full aspect-square"></canvas>
+            </div>
+        </div>
+
+
+        <div class="bg-gray-700 p-4 rounded-lg">
+            <h3 class="text-xl font-semibold mb-2">Overall Match</h3>
+            <p class="text-green-400 text-lg font-bold"><span id="match-percent">--%</span> Match with Job Description</p>
+        </div>
+
+        <div class="bg-gray-700 p-4 rounded-lg space-y-4">
+            <h3 class="text-xl font-semibold">Keyword Match</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h4 class="font-semibold">Matched Keywords</h4>
+                <ul id="matched-keywords" class="list-disc list-inside text-green-300 space-y-1"></ul>
+            </div>
+            <div>
+                <h4 class="font-semibold">Missing Keywords</h4>
+                <ul id="missing-keywords" class="list-disc list-inside text-red-300 space-y-1"></ul>
+            </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-700 p-4 rounded-lg">
+            <h3 class="text-xl font-semibold mb-2">Additional Scores</h3>
+            <p>Readability Score: <span id="readability-score" class="text-yellow-400">--</span></p>
+            <p>ATS Compatibility: <span id="ats-score" class="text-blue-400">--</span></p>
+        </div>
+
+        <div class="bg-gray-700 p-4 rounded-lg">
+            <h3 class="text-xl font-semibold mb-2">Format Analysis</h3>
+            <p id="format-structure"></p>
+            <p id="format-length" class="mt-2"></p>
+        </div>
+
+        <div class="bg-gray-700 p-4 rounded-lg space-y-4">
+            <h3 class="text-xl font-semibold">Impact Analysis</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h4 class="font-semibold">Impactful Phrases</h4>
+                <ul id="impactful-phrases" class="list-disc list-inside text-green-300 space-y-1"></ul>
+            </div>
+            <div>
+                <h4 class="font-semibold">Weak Phrases</h4>
+                <ul id="weak-phrases" class="list-disc list-inside text-yellow-300 space-y-1"></ul>
+            </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-700 p-4 rounded-lg space-y-4">
+            <h3 class="text-xl font-semibold">Skills Gap Analysis</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h4 class="font-semibold">Present Skills</h4>
+                <ul id="present-skills" class="list-disc list-inside text-green-300 space-y-1"></ul>
+            </div>
+            <div>
+                <h4 class="font-semibold">Suggested Skills</h4>
+                <ul id="suggested-skills" class="list-disc list-inside text-blue-300 space-y-1"></ul>
+            </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-700 p-4 rounded-lg">
+            <h3 class="text-xl font-semibold mb-2">Overall Improvement Suggestions</h3>
+            <ul id="improvement-suggestions" class="list-disc list-inside space-y-1 text-yellow-300"></ul>
+        </div>
+
+        <div class="bg-gray-700 p-4 rounded-lg">
+            <h3 class="text-xl font-semibold mb-2">General Recommendations</h3>
+            <ul id="general-recommendations" class="list-disc list-inside space-y-1 text-blue-300"></ul>
+        </div>
+
+        <div class="bg-gray-700 p-4 rounded-lg">
+            <h3 class="text-xl font-semibold mb-2">Industry-Specific Feedback</h3>
+            <p id="industry-feedback" class="text-gray-300"></p>
+        </div>
+    </div>
+  </div>
+</body>
+</html>
