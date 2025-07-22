@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/parse_resume', {
+      const response = await fetch('https://interview-prep-assistant-ai-based.onrender.com/parse_resume', {
         method: 'POST',
         body: formData
       });
